@@ -29,12 +29,9 @@ class Calc_cient(Calc_bas):
         Calc_bas.__init__(self, x,y)#constructor de Calc_bas
         self.x = x
         self.y = y
-
-
     def media(self,x):
         z = (sum(x)/len(x))
         return(z)
-    
     def mediac(self,x):
         x=x**2
         z = (self.media(x))
@@ -51,12 +48,13 @@ class Calc_cient(Calc_bas):
 
 
 x = np.array(input('Introduzca el primer numero a operar: '))
+x = x.astype(float)
 #print(x)
 y = np.array(input('Introduzca el segundo numero a operar: '))
+y = y.astype(float)
 #print(y)
 m = input('seleccione la operacion a realizar: \n 1)Suma \n 2)Resta \n 3)Division \n 4)Multiplicacion \n 5)Media \n 6)Media Cuadratica \n 7)Varianza \n 8)Desviacion \n')
 
-Calc1 = Calc_bas(x,y)
 Calc_cient = Calc_cient(x,y)
 if m==1:
     Z = Calc_cient.suma(x,y)
@@ -83,5 +81,4 @@ elif m==8:
     Z = Calc_cient.desviacion(x)
     print('Rta:',Z)
 else:
-    pass
     print("Opcion no encontrada, intente de nuevo.")
