@@ -8,13 +8,14 @@
 ###           IMPORTACION DE LIBRERIAS                  ###
 ###########################################################
 # Libreria obligatoria
+import numpy as np
 from gnuradio import gr
  
 # Librerias particulares
 from gnuradio import analog
 from gnuradio import blocks
 from gnuradio.filter import firdes
- 
+from gnuradio import audio 
 # Librerias para poder incluir graficas tipo QT
 from gnuradio import qtgui
 from PyQt5 import Qt # si no se acepta PyQt4 cambie PyQt4 por PyQt5
@@ -22,7 +23,7 @@ import sys, sip
  
 # Ahora debes importar tu libreria. A continuacion suponemos que tu libreria ha sido
 # guardada en un archivo llamado lib_comdig_code.py
-import Lib_G7 as misbloques  
+import Lib_G7 as bloques 
  
  
 ###########################################################
@@ -37,39 +38,32 @@ class flujograma(gr.top_block):
         ################################################
  
         # Las variables usadas en el flujograma
-        samp_rate = 3200
-        f=1000
-        N= 128
-        # Los bloques
-        src = analog.sig_source_f(samp_rate, analog.GR_SIN_WAVE, f, 1, 0)
-        nse = analog.noise_source_f(analog.GR_GAUSSIAN, 0.1)
-        add = misbloques.e_add_ff(1.0)
-        snk = qtgui.time_sink_f(
-            512, # numero de muestras en la ventana del osciloscopio
-            samp_rate,
-            "senal promediada", # nombre que aparece en la grafica
-            1 # Nuemero de entradas del osciloscopio
-        )
-        str2vec=blocks.stream_to_vector(gr.sizeof_float*1, N)
-        e_fft=misbloques.e_vector_fft_ff(N)
-        e_fft_2 = multiply(e_fft,e_fft)
+        samp_rate = 32000
+        N= 1024
+        # Los bloques usados
+        audio_out=audio.sink(samp_rate,"")#uso salidas de audio
+        audio_in=audio.source(samp_rate,"")#uso entradas de audio
+        strtovec=blocks.stream_to_vector(gr.sizeof_float*1, N)
+        e_fft=bloques.e_vector_fft_ff(N)
+        average=bloques.vector_average_hob(N ,30)
         vsnk = qtgui.vector_sink_f(
             N,
             -samp_rate/2.,
             samp_rate/N,
-            "frecuencia",
-            "Magnitud",
-            "FT en Magnitud",
-            1 # Number of inputs
+            "Frecuency",
+            "Magnitude",
+            "Magnitude of FFT",
+            2 # Number of inputs
         )
         vsnk.enable_autoscale(True)
-        # Las conexiones
-        self.connect(src, (add, 0))
-        self.connect(nse, (add, 1))
-        self.connect(add, snk)
-        self.connect(add, str2vec, e_fft, vsnk)
- 
-        # La configuracion para graficar
+        # conectando los bloques
+        self.connect(audio_in,strtovec,e_fft,(vsnk,0))
+        self.connect(e_fft, average, (vsnk,1))
+        self.connect(audio_in,audio_out)
+        
+        
+
+        # Graficando con QTGUI
         pyobj = sip.wrapinstance(vsnk.pyqwidget(), Qt.QWidget)
         pyobj.show()
  
@@ -77,11 +71,10 @@ class flujograma(gr.top_block):
 ###                LA CLASE PRINCIPAL                   ###
 ###########################################################
 def main():
-    # Para que lo nuestro sea considerado una aplicación tipo QT GUI
+    # Def de aplicacion como QT GUI
     qapp = Qt.QApplication(sys.argv)
     simulador_de_la_envolvente_compleja = flujograma()
     simulador_de_la_envolvente_compleja.start()
-    # Para arranque la parte grafica
     qapp.exec_()
  
 # como el main lo hemos puesto como una funcion, ahora hay que llamarla
