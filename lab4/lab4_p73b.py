@@ -22,7 +22,7 @@ import sys, sip
  
 # Ahora debes importar tu libreria. A continuacion suponemos que tu libreria ha sido
 # guardada en un archivo llamado lib_comdig_code.py
-import lab4_p73a as misbloques  
+import Lib_G7 as misbloques  
  
  
 ###########################################################
